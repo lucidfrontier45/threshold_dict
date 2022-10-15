@@ -1,10 +1,15 @@
 [package]
 name = "threshold-dict"
-version = "0.1.1"
-edition = "2021"
-license-file = "LICENSE"
-documentation = "README.md"
 description = "A data structure to find smallest key that is larger than the query"
+keywords = ["datastructures"]
+categories = ["data-structures"]
+license-file = "LICENSE"
+readme = "README.md"
+repository = "https://github.com/lucidfrontier45/threshold_dict"
+version = "0.1.3"
+edition = "2021"
+authors = ["Du Shiqiao <lucidfrontier.45@gmail.com>"]
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
