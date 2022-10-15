@@ -1,4 +1,4 @@
-# threshold_dict
+# threshold-dict
 A data structure to find smallest key that is larger than the query.
 
 Suppose we have a following weight dependent price table.
