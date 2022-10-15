@@ -59,7 +59,7 @@ impl<K: PartialOrd, V> ThresholdDict<K, V> {
     fn linear_search(&self, key: &K) -> &V {
         let n = self.keys.len();
         for i in 0..n {
-            if key < &self.keys[i] {
+            if key <= &self.keys[i] {
                 return self.values.get(i).unwrap();
             }
         }
@@ -67,7 +67,7 @@ impl<K: PartialOrd, V> ThresholdDict<K, V> {
     }
 
     fn binary_search(&self, key: &K) -> &V {
-        let i = self.keys.partition_point(|x| x <= key);
+        let i = self.keys.partition_point(|x| x < key);
         if i == self.keys.len() {
             return &self.default_value;
         }
@@ -84,9 +84,9 @@ mod test {
         let dict = ThresholdDict::new(vec![(10, 100), (20, 150), (50, 300)], 500);
 
         assert_eq!(dict.linear_search(&0), &100);
-        assert_eq!(dict.linear_search(&10), &150);
+        assert_eq!(dict.linear_search(&10), &100);
         assert_eq!(dict.linear_search(&15), &150);
-        assert_eq!(dict.linear_search(&50), &500);
+        assert_eq!(dict.linear_search(&50), &300);
         assert_eq!(dict.linear_search(&60), &500);
     }
 
@@ -95,9 +95,9 @@ mod test {
         let dict = ThresholdDict::new(vec![(10, 100), (20, 150), (50, 300)], 500);
 
         assert_eq!(dict.binary_search(&0), &100);
-        assert_eq!(dict.binary_search(&10), &150);
+        assert_eq!(dict.binary_search(&10), &100);
         assert_eq!(dict.binary_search(&15), &150);
-        assert_eq!(dict.binary_search(&50), &500);
+        assert_eq!(dict.binary_search(&50), &300);
         assert_eq!(dict.binary_search(&60), &500);
     }
 
