@@ -34,9 +34,9 @@ impl<K: PartialOrd, V> ThresholdDict<K, V> {
         dict
     }
 
-    pub fn get(&self, key: &K) -> Option<&V> {
+    pub fn query(&self, key: &K) -> &V {
         if self.keys.is_empty() {
-            return None;
+            return &self.default_value;
         }
 
         if self.keys.len() < self.linear_search_max_len {
@@ -46,22 +46,22 @@ impl<K: PartialOrd, V> ThresholdDict<K, V> {
         }
     }
 
-    fn linear_search(&self, key: &K) -> Option<&V> {
+    fn linear_search(&self, key: &K) -> &V {
         let n = self.keys.len();
         for i in 0..n {
             if key < &self.keys[i] {
-                return self.values.get(i);
+                return self.values.get(i).unwrap();
             }
         }
-        Some(&self.default_value)
+        &self.default_value
     }
 
-    fn binary_search(&self, key: &K) -> Option<&V> {
+    fn binary_search(&self, key: &K) -> &V {
         let i = self.keys.partition_point(|x| x <= key);
         if i == self.keys.len() {
-            return Some(&self.default_value);
+            return &self.default_value;
         }
-        self.values.get(i)
+        self.values.get(i).unwrap()
     }
 }
 
@@ -70,24 +70,35 @@ mod test {
     use super::ThresholdDict;
 
     #[test]
-    fn test_step_dict_linear() {
+    fn test_linear() {
         let dict = ThresholdDict::new(vec![(10, 100), (20, 150), (50, 300)], 500);
 
-        assert_eq!(dict.linear_search(&0).unwrap(), &100);
-        assert_eq!(dict.linear_search(&10).unwrap(), &150);
-        assert_eq!(dict.linear_search(&15).unwrap(), &150);
-        assert_eq!(dict.linear_search(&50).unwrap(), &500);
-        assert_eq!(dict.linear_search(&60).unwrap(), &500);
+        assert_eq!(dict.linear_search(&0), &100);
+        assert_eq!(dict.linear_search(&10), &150);
+        assert_eq!(dict.linear_search(&15), &150);
+        assert_eq!(dict.linear_search(&50), &500);
+        assert_eq!(dict.linear_search(&60), &500);
     }
 
     #[test]
-    fn test_step_dict_binary() {
+    fn test_binary() {
         let dict = ThresholdDict::new(vec![(10, 100), (20, 150), (50, 300)], 500);
 
-        assert_eq!(dict.binary_search(&0).unwrap(), &100);
-        assert_eq!(dict.binary_search(&10).unwrap(), &150);
-        assert_eq!(dict.binary_search(&15).unwrap(), &150);
-        assert_eq!(dict.binary_search(&50).unwrap(), &500);
-        assert_eq!(dict.binary_search(&60).unwrap(), &500);
+        assert_eq!(dict.binary_search(&0), &100);
+        assert_eq!(dict.binary_search(&10), &150);
+        assert_eq!(dict.binary_search(&15), &150);
+        assert_eq!(dict.binary_search(&50), &500);
+        assert_eq!(dict.binary_search(&60), &500);
+    }
+
+    #[test]
+    fn test_default_value() {
+        let dict = ThresholdDict::new(vec![], 500);
+
+        assert_eq!(dict.query(&0), &500);
+        assert_eq!(dict.query(&10), &500);
+        assert_eq!(dict.query(&15), &500);
+        assert_eq!(dict.query(&50), &500);
+        assert_eq!(dict.query(&60), &500);
     }
 }
