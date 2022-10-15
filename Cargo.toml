@@ -2,7 +2,9 @@
 name = "threshold-dict"
 version = "0.1.1"
 edition = "2021"
-
+license-file = "LICENSE"
+documentation = "README.md"
+description = "A data structure to find smallest key that is larger than the query"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
