@@ -1,3 +1,7 @@
+#![allow(clippy::non_ascii_literal)]
+#![allow(clippy::module_name_repetitions)]
+#![doc = include_str!("../README.md")]
+
 pub struct ThresholdDict<K, V> {
     keys: Vec<K>,
     values: Vec<V>,
@@ -8,6 +12,7 @@ pub struct ThresholdDict<K, V> {
 const DEFAULT_LINEAR_SEARCH_MAX_LEN: usize = 10;
 
 impl<K: PartialOrd, V> ThresholdDict<K, V> {
+    /// default constructor
     pub fn new(mut kv: Vec<(K, V)>, default_value: V) -> Self {
         kv.sort_by(|lhs, rhs| lhs.0.partial_cmp(&rhs.0).unwrap());
         let mut keys = vec![];
@@ -24,6 +29,7 @@ impl<K: PartialOrd, V> ThresholdDict<K, V> {
         }
     }
 
+    /// constructor with custom `linear_search_max_len` parameter
     pub fn with_linear_search_max_len(
         kv: Vec<(K, V)>,
         default_value: V,
@@ -34,6 +40,10 @@ impl<K: PartialOrd, V> ThresholdDict<K, V> {
         dict
     }
 
+    /// The query method.
+    /// A value corresponding the minimum key which is larger than the query key is returned.
+    /// If the internal key-value list is empty, the default value is always returned.
+    /// The search algorithm is selected from linear search or binary search governed by internal `linear_search_max_len` parameter.
     pub fn query(&self, key: &K) -> &V {
         if self.keys.is_empty() {
             return &self.default_value;
