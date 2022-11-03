@@ -32,8 +32,8 @@ A `ThresholdDict` can be created by passing kv pairs and a default value. If que
 
 ```rust
 let kv_pairs = vec![(100, 10), (200, 15), (500, 30)];
-let default_value = 50;
+let default_value = Some(50);
 let dict = ThresholdDict::new(kv_paris, default_value);
 
-assert_eq!(dict.get(90), 10);
+assert_eq!(dict.get(&90), Some(&10));
 ```
