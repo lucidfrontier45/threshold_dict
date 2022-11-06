@@ -10,6 +10,23 @@ pub struct ThresholdDict<K, V> {
     default_value: Option<V>,
 }
 
+impl<K: Ord, V> From<BTreeMap<K, V>> for ThresholdDict<K, V> {
+    fn from(tree: BTreeMap<K, V>) -> Self {
+        Self {
+            tree,
+            default_value: None,
+        }
+    }
+}
+
+impl<K: Ord, V: Eq> PartialEq for ThresholdDict<K, V> {
+    fn eq(&self, other: &Self) -> bool {
+        self.tree == other.tree && self.default_value == other.default_value
+    }
+}
+
+impl<K: Ord, V: Eq> Eq for ThresholdDict<K, V> {}
+
 impl<K: Ord, V> ThresholdDict<K, V> {
     /// default constructor
     pub fn new(kv: Vec<(K, V)>) -> Self {
@@ -23,6 +40,11 @@ impl<K: Ord, V> ThresholdDict<K, V> {
             tree,
             default_value,
         }
+    }
+
+    /// set the default value
+    pub fn set_default_value(&mut self, default_value: Option<V>) {
+        self.default_value = default_value;
     }
 
     /// The query method.
@@ -40,7 +62,26 @@ impl<K: Ord, V> ThresholdDict<K, V> {
 
 #[cfg(test)]
 mod test {
+    use std::collections::BTreeMap;
+
     use super::ThresholdDict;
+
+    #[test]
+    fn test_from_btree_map() {
+        let map = BTreeMap::from([(10, 100), (20, 150), (50, 300)]);
+        let dict = ThresholdDict::from(map);
+        let correct_dict = ThresholdDict::new(vec![(10, 100), (20, 150), (50, 300)]);
+        assert!(dict == correct_dict);
+    }
+
+    #[test]
+    fn test_set_default_value() {
+        let mut dict = ThresholdDict::new(vec![(10, 100), (20, 150), (50, 300)]);
+        dict.set_default_value(Some(500));
+        let correct_dict =
+            ThresholdDict::with_default_value(vec![(10, 100), (20, 150), (50, 300)], Some(500));
+        assert!(dict == correct_dict);
+    }
 
     #[test]
     fn test_query() {
