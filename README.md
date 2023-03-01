@@ -28,12 +28,13 @@ cargo add threshold_dict
 
 ## Usage
 
-A `ThresholdDict` can be created by passing kv pairs and a default value. If query is greater than or equal to all of the keys, the default value is used.
+A `ThresholdDict` can be created by passing kv pairs and a default func. If query is greater than or equal to all of the keys, the default func is used.
 
 ```rust
 let kv_pairs = vec![(100, 10), (200, 15), (500, 30)];
-let default_value = Some(50);
-let dict = ThresholdDict::with_default_value(kv_paris, default_value);
+let tree: BTreeMap<u32, u32> = kv_pairs.into_iter().collect();
+let default_func = Box::new(|_: &u32| Some(50));
+let dict = ThresholdDict::with_default_func(tree, default_func);
 
-assert_eq!(dict.get(&90), Some(&10));
+assert_eq!(dict.query(&90), Some(10));
 ```
