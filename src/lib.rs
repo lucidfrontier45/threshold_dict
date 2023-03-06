@@ -22,17 +22,20 @@ impl<K: Ord, V: Copy> ThresholdDict<K, V> {
         Self::with_default_func(tree, default_func)
     }
 
-    /// constructor with default value
-    pub fn with_default_func(
+    /// constructor with default func
+    pub fn with_default_func<F: Fn(&K) -> Option<V> + 'static>(
         tree: BTreeMap<K, V>,
-        default_func: Box<dyn Fn(&K) -> Option<V>>,
+        default_func: F,
     ) -> Self {
-        Self { tree, default_func }
+        Self {
+            tree,
+            default_func: Box::new(default_func),
+        }
     }
 
     /// set the default value
-    pub fn set_default_func(&mut self, default_func: Box<dyn Fn(&K) -> Option<V>>) {
-        self.default_func = default_func;
+    pub fn set_default_func<F: Fn(&K) -> Option<V> + 'static>(&mut self, default_func: F) {
+        self.default_func = Box::new(default_func);
     }
 
     /// The query method.
@@ -80,7 +83,7 @@ mod test {
     #[test]
     fn test_query_with_default_value() {
         let default_value = 500;
-        let default_func = Box::new(move |_: &u32| Some(default_value));
+        let default_func = move |_: &u32| Some(default_value);
         let tree = BTreeMap::from([(10, 100), (20, 150), (50, 300)]);
         let dict = ThresholdDict::with_default_func(tree, default_func);
         assert_eq!(dict.query(&0), Some(100));
