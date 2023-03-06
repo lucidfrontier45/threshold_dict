@@ -33,7 +33,7 @@ A `ThresholdDict` can be created by passing kv pairs and a default func. If quer
 ```rust
 let kv_pairs = vec![(100, 10), (200, 15), (500, 30)];
 let tree: BTreeMap<u32, u32> = kv_pairs.into_iter().collect();
-let default_func = Box::new(|_: &u32| Some(50));
+let default_func = |_: &u32| Some(50);
 let dict = ThresholdDict::with_default_func(tree, default_func);
 
 assert_eq!(dict.query(&90), Some(10));
