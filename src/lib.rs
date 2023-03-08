@@ -1,49 +1,48 @@
 #![allow(clippy::type_complexity)]
 
 use std::collections::BTreeMap;
+use std::fmt::Debug;
 use std::ops::Bound::{Excluded, Unbounded};
 
 pub struct ThresholdDict<K, V> {
     tree: BTreeMap<K, V>,
-    default_func: Box<dyn Fn(&K) -> Option<V>>,
 }
 
-impl<K: Ord, V: Copy> From<Vec<(K, V)>> for ThresholdDict<K, V> {
+impl<K: Ord, V> From<Vec<(K, V)>> for ThresholdDict<K, V> {
     fn from(kv: Vec<(K, V)>) -> Self {
         let tree = BTreeMap::from_iter(kv);
         Self::new(tree)
     }
 }
 
-impl<K: Ord, V: Copy> ThresholdDict<K, V> {
+impl<K: Ord, V> ThresholdDict<K, V> {
     /// default constructor
     pub fn new(tree: BTreeMap<K, V>) -> Self {
-        let default_func = Box::new(|_: &K| None::<V>);
-        Self::with_default_func(tree, default_func)
-    }
-
-    /// constructor with default func
-    pub fn with_default_func<F: Fn(&K) -> Option<V> + 'static>(
-        tree: BTreeMap<K, V>,
-        default_func: F,
-    ) -> Self {
-        Self {
-            tree,
-            default_func: Box::new(default_func),
-        }
-    }
-
-    /// set the default value
-    pub fn set_default_func<F: Fn(&K) -> Option<V> + 'static>(&mut self, default_func: F) {
-        self.default_func = Box::new(default_func);
+        Self { tree }
     }
 
     /// The query method.
     /// A value corresponding the smallest key which is greater than the query key is returned.
-    pub fn query(&self, key: &K) -> Option<V> {
+    pub fn query(&self, key: &K) -> Option<&V> {
         let query = (Excluded(key), Unbounded);
         let result = self.tree.range(query).next();
-        result.map(|(_, v)| *v).or_else(|| (self.default_func)(key))
+        result.map(|(_, v)| v)
+    }
+}
+
+impl<K: Ord + Clone, V: Clone> Clone for ThresholdDict<K, V> {
+    fn clone(&self) -> Self {
+        Self {
+            tree: self.tree.clone(),
+        }
+    }
+}
+
+impl<K: Ord + Debug, V: Debug> Debug for ThresholdDict<K, V> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("ThresholdDict")
+            .field("tree", &self.tree)
+            .finish()
     }
 }
 
@@ -62,35 +61,20 @@ mod test {
     }
 
     #[test]
-    fn test_set_default_value() {
-        let mut dict = ThresholdDict::from(vec![(10, 100), (20, 150), (50, 300)]);
-        let default_func = Box::new(|_: &u32| Some(500));
-        dict.set_default_func(default_func.clone());
-        assert_eq!((dict.default_func)(&60), default_func(&60));
+    fn test_clone() {
+        let dict = ThresholdDict::from(vec![(10, 100), (20, 150), (50, 300)]);
+        let dict2 = dict.clone();
+        assert_eq!(dict.tree, dict2.tree);
     }
 
     #[test]
     fn test_query() {
         let dict = ThresholdDict::from(vec![(10, 100), (20, 150), (50, 300)]);
-        assert_eq!(dict.query(&0), Some(100));
-        assert_eq!(dict.query(&10), Some(150));
-        assert_eq!(dict.query(&15), Some(150));
-        assert_eq!(dict.query(&40), Some(300));
+        assert_eq!(dict.query(&0), Some(&100));
+        assert_eq!(dict.query(&10), Some(&150));
+        assert_eq!(dict.query(&15), Some(&150));
+        assert_eq!(dict.query(&40), Some(&300));
         assert_eq!(dict.query(&50), None);
         assert_eq!(dict.query(&60), None);
-    }
-
-    #[test]
-    fn test_query_with_default_value() {
-        let default_value = 500;
-        let default_func = move |_: &u32| Some(default_value);
-        let tree = BTreeMap::from([(10, 100), (20, 150), (50, 300)]);
-        let dict = ThresholdDict::with_default_func(tree, default_func);
-        assert_eq!(dict.query(&0), Some(100));
-        assert_eq!(dict.query(&10), Some(150));
-        assert_eq!(dict.query(&15), Some(150));
-        assert_eq!(dict.query(&40), Some(300));
-        assert_eq!(dict.query(&50), Some(500));
-        assert_eq!(dict.query(&60), Some(500));
     }
 }
