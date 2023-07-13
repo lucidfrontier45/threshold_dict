@@ -10,12 +10,12 @@ weight,price
 500,30
 ```
 
-The price is decided by the smallest entry whose `weight` key is greater than the query. 
+The price is decided by the smallest entry whose `weight` key is greater than or equal to the query. 
 
 *examples*
 
 - weight=90 -> price=10
-- weight=100 -> price=15
+- weight=100 -> price=10
 - weight=250 -> price=30
 - weight=600 -> price=Not Found
 
@@ -27,7 +27,7 @@ cargo add threshold_dict
 
 ## Usage
 
-A `ThresholdDict` can be created by passing kv pairs. If query is greater than or equal to all of the keys, None is returned.
+A `ThresholdDict` can be created by passing kv pairs. If query is greater than all of the keys, None is returned.
 
 ```rust
 let kv_pairs = vec![(100, 10), (200, 15), (500, 30)];
